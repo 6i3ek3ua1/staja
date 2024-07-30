@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <meta name="description" content="Лучшие товары в городе">
+    <link rel="stylesheet" href="../../../static/css/normalize.css">
+    <link rel="stylesheet" href="../../../static/css/reset.css">
+    <link rel="stylesheet" href="../../../static/css/styles.css">
+</head>
+<body>
+    <nav class="header">
+        <ul class="refs">
+            <li><a href="{% url 'products:basket_view' %}">КОРЗИНА</a></li>
+            <li><a href="{% url 'products:index' %}">АССОРТИМЕНТ</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'users:profile' user.id %}">{{ user.username }}</a></li>
+            {% else %}
+                <li><a href="{% url 'users:login' %}">ВОЙТИ</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <main>
+        <div class="container">
+            <div class="main-content">
+                <div class="products">
+                    <h2>Корзина товаров</h2>
+                    <div class="product-list">
+                        {% if baskets %}
+                            {% for basket in baskets %}
+                            <div class="product">
+                                {{ basket.product.name }}
+                                {{ basket.quantity }} шт.
+                                {{ basket.sum }} р.
+                                <a href="{% url 'products:basket_remove' basket.id%}" class="button">Удалить товар</a>
+                            </div>
+                        {% endfor %}
+                            </div>
+                    <div>Итого товаров {{ baskets.total_quantity }}шт. на сумму {{ baskets.total_sum }}р.</div>
+                        <div><a id="normal" href="{% url 'order:order_view' %}" class="button">Перейти к оплате</a></div>
+                    {% else %}
+                        <h1> Корзина пуста</h1>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </main>

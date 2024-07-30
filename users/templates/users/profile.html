@@ -1,0 +1,22 @@
+{% extends 'users/base.html' %}
+
+{% block content %}
+	<section>
+            <form action="{% url 'users:profile' user.id %}" method="POST">
+                {% csrf_token %}
+                {{ form.first_name }}<br>
+                {{ form.last_name }}<br>
+                {{ form.username }}<br>
+                {{ form.email }}<br>
+                {{ form.user_address }}<br>
+
+                <div>
+                    <input type="submit" value="Сохранить">
+                </div>
+                <div>
+                    <div class="small"><a id="normal" href="{%  url 'users:logout' %}">Выйти из аккаунта</a></div>
+                </div>
+
+            </form>
+    </section>
+{% endblock %}

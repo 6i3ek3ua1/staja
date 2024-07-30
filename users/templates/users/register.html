@@ -1,0 +1,21 @@
+{% extends 'users/base.html' %}
+{% block content %}
+	<section>
+            <form action="{% url 'users:registration' %}" method="POST">
+                 {% csrf_token %}
+                 {{ form.first_name}}<br>
+                 {{ form.last_name }}<br>
+                 {{ form.username }}<br>
+                 {{ form.email}}<br>
+                 {{ form.user_address }}<br>
+                 {{ form.password1 }}<br>
+                 {{ form.password2}}<br>
+                 <div>
+                     <input type="submit" value="Создать аккаунт">
+                 </div>
+                 <div>
+                     <div class="small"><a id="normal" href="{%  url 'users:login' %}">Уже есть аккаунт? Авторизоваться</a></div>
+                 </div>
+             </form>
+    </section>
+{% endblock %}

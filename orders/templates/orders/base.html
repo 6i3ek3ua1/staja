@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <meta name="description" content="Лучшие товары в городе">
+    <link rel="stylesheet" href="../../../static/css/normalize.css">
+    <link rel="stylesheet" href="../../../static/css/reset.css">
+    <link rel="stylesheet" href="../../../static/css/styles.css">
+</head>
+<body>
+    <nav class="header">
+        <ul class="refs">
+            <li><a href="{% url 'products:basket_view' %}">КОРЗИНА</a></li>
+            <li><a href="{% url 'products:index' %}">АССОРТИМЕНТ</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'users:profile' user.id %}">{{ user.username }}</a></li>
+            {% else %}
+                <li><a href="{% url 'users:login' %}">ВОЙТИ</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <main>
+        <div class="container">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+</body>
+</html>

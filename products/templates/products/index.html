@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <meta name="description" content="Лучшие товары в городе">
+    <link rel="stylesheet" href="../../../static/css/normalize.css">
+    <link rel="stylesheet" href="../../../static/css/reset.css">
+    <link rel="stylesheet" href="../../../static/css/styles.css">
+</head>
+<body>
+    <nav class="header">
+        <ul class="refs">
+            <li><a href="{% url 'products:basket_view' %}">КОРЗИНА</a></li>
+            <li><a href="{% url 'products:index' %}">АССОРТИМЕНТ</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'users:profile' user.id %}">{{ user.username }}</a></li>
+            {% else %}
+                <li><a href="{% url 'users:login' %}">ВОЙТИ</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <main>
+        <div class="container">
+            <div class="main-content">
+                <div class="consultation">
+                    <h2>Запись на консультацию</h2>
+                    <form action="/book-consultation" method="post">
+                        <label for="name">Имя:</label>
+                        <input type="text" id="name" name="name" required>
+
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+
+                        <label for="phone">Телефон:</label>
+                        <input type="tel" id="phone" name="phone" required>
+
+                        <label for="message">Сообщение:</label>
+                        <textarea id="message" name="message" rows="4" required></textarea>
+
+                        <button type="submit">Записаться</button>
+                    </form>
+                </div>
+
+                <div class="products">
+                    <h2>Заказ товаров</h2>
+                    <h3>Категории: </h3>
+                    {% for category in categories %}
+                        <a href="{% url 'products:category' category.id %}">{{ category.name }}</a>
+                    {% endfor %}
+                    <div class="product-list">
+                        {% for product in products %}
+                            <div class="product">
+                                <h3>{{ product.name }}</h3>
+                                <p>{{ product.description }}</p>
+                                <h3>{{ product.price }}</h3>
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'products:basket_add' product.id%}" class="button">Заказать</a>
+                                {% else %}
+                                    <a href="{% url 'users:login'%}" class="button">Заказать</a>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="footer">
+        <p>&copy; 2024 Ваш сайт. Все права защищены.</p>
+    </footer>
+</body>
+</html>

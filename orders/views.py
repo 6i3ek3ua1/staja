@@ -3,7 +3,7 @@ import uuid
 from http import HTTPStatus
 from yookassa.domain.notification import WebhookNotificationEventType, WebhookNotificationFactory
 from django.http import HttpResponseRedirect, HttpResponse
-from yookassa import Configuration, Payment
+from yookassa import Configuration, Payment, Receipt
 from django.urls import reverse_lazy, reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.edit import CreateView
@@ -49,6 +49,58 @@ class OrderView(CreateView):
             "capture": True,
             "description": "Заказ №1"
         }, uuid.uuid4())
+
+        res = Receipt.create({
+            "customer": {
+                "full_name": f"{self.request.user.first_name} {self.request.user.last_name}",
+                "email": f"{self.request.user.email}",
+            },
+            "type": "payment",
+            "send": True,
+            "items": [
+                {
+                    "description": "Наименование товара 1",
+                    "quantity": 1.000,
+                    "amount": {
+                        "value": "14000.00",
+                        "currency": "RUB"
+                    },
+                    "vat_code": "2",
+                    "payment_mode": "full_payment",
+                    "payment_subject": "commodity",
+                    "country_of_origin_code": "CN",
+                },
+                {
+                    "description": "Наименование товара 2",
+                    "quantity": 1.000,
+                    "amount": {
+                        "value": "1000.00",
+                        "currency": "RUB"
+                    },
+                    "vat_code": "2",
+                    "payment_mode": "full_payment",
+                    "payment_subject": "commodity",
+                    "country_of_origin_code": "CN",
+                },
+            ],
+            "settlements": [
+                {
+                    "type": "prepayment",
+                    "amount": {
+                        "value": "8000.00",
+                        "currency": "RUB"
+                    },
+                },
+                {
+                    "type": "prepayment",
+                    "amount": {
+                        "value": "7000.00",
+                        "currency": "RUB"
+                    },
+                }
+            ]
+        })
+
         return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
 
     def form_valid(self, form):

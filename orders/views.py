@@ -1,6 +1,8 @@
 import json
+import time
 import uuid
 from http import HTTPStatus
+from django.views.generic import ListView
 from yookassa.domain.notification import WebhookNotificationEventType, WebhookNotificationFactory
 from django.http import HttpResponseRedirect, HttpResponse
 from yookassa import Configuration, Payment, Receipt
@@ -45,22 +47,48 @@ class OrderView(CreateView):
                 "value": f"{summ}",
                 "currency": "RUB"
             },
-            "payment_method_data": {
-                "type": "bank_card"
-            },
             "confirmation": {
                 "type": "redirect",
                 "return_url": "{}{}".format(settings.DOMAIN_NAME, reverse('order:success_order')),
             },
             "capture": True,
-            "description": f"{last_order.id}",
-            "save_payment_method": True
+            "description": f"{last_order.id}"
         }, uuid.uuid4())
         return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super(OrderView, self).form_valid(form)
+
+
+class OrderConsultView(CreateView):
+    template_name = 'orders/order-create.html'
+    success_url = reverse_lazy('order:order_consult')
+    form_class = OrderForm
+
+    def post(self, request, *args, **kwargs):
+        super(OrderConsultView, self).post(request, *args, **kwargs)
+        payment = Payment.create({
+            "amount": {
+                "value": "50.00",
+                "currency": "RUB"
+            },
+            "payment_method_data": {
+                "type": "bank_card"
+            },
+            "confirmation": {
+                "type": "redirect",
+                "return_url": "{}{}".format(settings.DOMAIN_NAME, reverse('order:success_order'))
+            },
+            "capture": True,
+            "description": "72",
+            "save_payment_method": True
+        }, uuid.uuid4())
+        return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super(OrderConsultView, self).form_valid(form)
 
 
 @csrf_exempt
@@ -129,10 +157,13 @@ def my_webhook_handler(request):
             if payment_info:
                 payment_status = payment_info.status
                 if payment_status == "succeeded":
-                    order_id = some_data['orderId']
-                    order = Order.objects.get(id=order_id)
-                    order.update_after_payment()
-                    print('emae_klass')
+                    if payment_info.payment_method.saved:
+                        print('success')
+                    else:
+                        order_id = some_data['orderId']
+                        order = Order.objects.get(id=order_id)
+                        order.update_after_payment()
+                        print('emae_klass')
                 else:
                     print('emae ne klass')
 
@@ -147,3 +178,29 @@ def my_webhook_handler(request):
             return HttpResponse(status=400)  # Сообщаем кассе об ошибке
 
         return HttpResponse(status=200)  # Сообщаем кассе, что все хорошо
+
+
+'''class AutoPayment(CreateView):
+    def post(self, request, *args, **kwargs):
+        super(AutoPayment, self).post(request, *args, **kwargs)
+        payment = Payment.create({
+            "amount": {
+                "value": "150.00",
+                "currency": "RUB"
+            },
+            "capture": True,
+            "payment_method_id": f"{payment_info.payment_method.id}",
+            "description": "73"
+        })
+        return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
+'''
+
+class OrderListView(ListView):
+    template_name = 'orders/order-list.html'
+    title = 'Мои заказы'
+    queryset = Order.objects.all()
+
+    def get_queryset(self):
+        queryset = super(OrderListView, self).get_queryset()
+        return queryset.filter(user=self.request.user)
+

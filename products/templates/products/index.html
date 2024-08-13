@@ -25,7 +25,8 @@
             <div class="main-content">
                 <div class="consultation">
                     <h2>Запись на консультацию</h2>
-                    <form action="/book-consultation" method="post">
+                    <form action="/order/consult/" method="post">
+                        {% csrf_token %}
                         <label for="name">Имя:</label>
                         <input type="text" id="name" name="name" required>
 

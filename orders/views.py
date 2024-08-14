@@ -62,12 +62,14 @@ class OrderView(CreateView):
 
 
 class OrderConsultView(CreateView):
-    template_name = 'orders/order-create.html'
+    template_name = 'orders/order-auto.html'
     success_url = reverse_lazy('order:order_consult')
     form_class = OrderForm
 
     def post(self, request, *args, **kwargs):
         super(OrderConsultView, self).post(request, *args, **kwargs)
+        orders = Order.objects.filter(user=self.request.user)
+        last_order = orders.last()
         payment = Payment.create({
             "amount": {
                 "value": "50.00",
@@ -81,7 +83,7 @@ class OrderConsultView(CreateView):
                 "return_url": "{}{}".format(settings.DOMAIN_NAME, reverse('order:success_order'))
             },
             "capture": True,
-            "description": "72",
+            "description": f"{last_order.id}",
             "save_payment_method": True
         }, uuid.uuid4())
         return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
@@ -158,7 +160,10 @@ def my_webhook_handler(request):
                 payment_status = payment_info.status
                 if payment_status == "succeeded":
                     if payment_info.payment_method.saved:
-                        print('success')
+                        order_id = some_data['orderId']
+                        order = Order.objects.get(id=order_id)
+                        order.add_payment_id(payment_info.payment_method.id)
+                        print('autoklass')
                     else:
                         order_id = some_data['orderId']
                         order = Order.objects.get(id=order_id)
@@ -180,21 +185,6 @@ def my_webhook_handler(request):
         return HttpResponse(status=200)  # Сообщаем кассе, что все хорошо
 
 
-'''class AutoPayment(CreateView):
-    def post(self, request, *args, **kwargs):
-        super(AutoPayment, self).post(request, *args, **kwargs)
-        payment = Payment.create({
-            "amount": {
-                "value": "150.00",
-                "currency": "RUB"
-            },
-            "capture": True,
-            "payment_method_id": f"{payment_info.payment_method.id}",
-            "description": "73"
-        })
-        return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
-'''
-
 class OrderListView(ListView):
     template_name = 'orders/order-list.html'
     title = 'Мои заказы'
@@ -203,4 +193,3 @@ class OrderListView(ListView):
     def get_queryset(self):
         queryset = super(OrderListView, self).get_queryset()
         return queryset.filter(user=self.request.user)
-

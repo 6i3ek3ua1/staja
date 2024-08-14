@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,9 +26,9 @@ SECRET_KEY = 'django-insecure-mfyfxh@zdqhpql0u@rqb4r4mwjsc#ak6ow=n(-7s^(#&ur20h7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'f93d-109-252-182-44.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', 'f417-109-252-182-44.ngrok-free.app', '127.0.0.1']
 
-CSRF_TRUSTED_ORIGINS = ['https://f93d-109-252-182-44.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://f417-109-252-182-44.ngrok-free.app']
 
 DOMAIN_NAME = 'http://localhost:8000'
 
@@ -42,7 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'products',
-    'orders'
+    'orders',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -139,3 +141,15 @@ LOGOUT_REDIRECT_URL = '/'
 #Yookassa
 YOOKASSA_SECRET_KEY = 'test_HrOiPv0dOnscsu8js0TdFpvEbBx0XiVo6Of9F_QFAnQ'
 YOOKASSA_SHOP_ID = '424186'
+
+# Указываем брокер сообщений, который будет использоваться Celery
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+CELERY_BEAT_SCHEDULE = {
+    'run-task-every-30-seconds': {
+        'task': 'orders.tasks.initiate_auto_payments',
+        'schedule': timedelta(seconds=30),
+    },
+}
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

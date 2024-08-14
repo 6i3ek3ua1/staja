@@ -8,5 +8,4 @@ urlpatterns = [
     path('canсel/', CancelTemplateView.as_view(), name='cancel_order'),
     path('list/', OrderListView.as_view(), name='list_order'),
     path('consult/', OrderConsultView.as_view(), name='order_consult'),
-    '''path('consult/auto/', AutoPayment.as_view(), name='auto_order_consult'),'''
 ]

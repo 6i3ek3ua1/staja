@@ -14,6 +14,7 @@ from django.conf import settings
 from orders.forms import OrderForm
 from products.models import Basket
 from orders.models import Order
+from orders.tasks import initiate_auto_payments
 
 
 Configuration.account_id = settings.YOOKASSA_SHOP_ID
@@ -86,6 +87,8 @@ class OrderConsultView(CreateView):
             "description": f"{last_order.id}",
             "save_payment_method": True
         }, uuid.uuid4())
+        result = initiate_auto_payments.delay()
+        print(result)
         return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
 
     def form_valid(self, form):

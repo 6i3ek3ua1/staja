@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: staja_python
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Ctvtyc20082004
+    networks:
+      - staja-network
+
+  redis:
+    image: redis:7
+    networks:
+      - staja-network
+
+  web:
+    build: .
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DJANGO_SECRET_KEY=django-insecure-mfyfxh@zdqhpql0u@rqb4r4mwjsc#ak6ow=n(-7s^(#&ur20h7
+      - POSTGRES_DB=staja_python
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Ctvtyc20082004
+      - POSTGRES_HOST=db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    networks:
+      - staja-network
+
+  celery:
+    build: .
+    command: celery -A staja worker --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DJANGO_SECRET_KEY=django-insecure-mfyfxh@zdqhpql0u@rqb4r4mwjsc#ak6ow=n(-7s^(#&ur20h7
+      - POSTGRES_DB=staja_python
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Ctvtyc20082004
+      - POSTGRES_HOST=db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    networks:
+      - staja-network
+
+volumes:
+  postgres_data:
+
+networks:
+  staja-network:

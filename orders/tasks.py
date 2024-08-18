@@ -1,21 +1,29 @@
+import time
 import uuid
-from http import HTTPStatus
-
-from celery import shared_task
-from django.http import HttpResponseRedirect
+import schedule
+from celery import shared_task, Celery
 from yookassa import Payment, Configuration
 from staja import settings
 from .models import Order
 
 
+
 Configuration.account_id = settings.YOOKASSA_SHOP_ID
 Configuration.secret_key = settings.YOOKASSA_SECRET_KEY
 
+app = Celery('tasks', broker='redis://localhost:6379/0')
 
 @shared_task
 def initiate_auto_payments():
+    schedule.every(30).seconds.do(auto_payments)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+def auto_payments():
     orders = Order.objects.filter(is_active=True)
-    print(orders)
 
     for payment in orders:
         try:
@@ -24,16 +32,12 @@ def initiate_auto_payments():
                     "value": "150.00",
                     "currency": "RUB"
                 },
-                "payment_method_data": {
-                    "type": "bank_card"
-                },
                 "capture": True,
                 "payment_method_id": payment.payment_id,
                 "description": f"{payment.id}",
                 "save_payment_method": True
             }, uuid.uuid4())
-            print("OKKKK")
-            return HttpResponseRedirect(new_payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
+            return 'OKKKKKKK'
         except Exception as e:
             # Логирование ошибки или уведомление администратора
             print(f"Error processing auto payment {payment.id}: {str(e)}")

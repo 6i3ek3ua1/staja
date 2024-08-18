@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 from celery.schedules import timedelta
 
@@ -26,11 +26,11 @@ SECRET_KEY = 'django-insecure-mfyfxh@zdqhpql0u@rqb4r4mwjsc#ak6ow=n(-7s^(#&ur20h7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', 'f417-109-252-182-44.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '30c4-109-252-182-44.ngrok-free.app', '127.0.0.1', '0.0.0.0', 'web']
 
-CSRF_TRUSTED_ORIGINS = ['https://f417-109-252-182-44.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://30c4-109-252-182-44.ngrok-free.app']
 
-DOMAIN_NAME = 'http://localhost:8000'
+DOMAIN_NAME = 'http://127.0.0.1:8000'
 
 # Application definition
 
@@ -43,8 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'products',
-    'orders',
     'django_celery_beat',
+    'django_celery_results',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
@@ -84,8 +85,12 @@ WSGI_APPLICATION = 'staja.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'db'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -143,13 +148,21 @@ YOOKASSA_SECRET_KEY = 'test_HrOiPv0dOnscsu8js0TdFpvEbBx0XiVo6Of9F_QFAnQ'
 YOOKASSA_SHOP_ID = '424186'
 
 # Указываем брокер сообщений, который будет использоваться Celery
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 
-CELERY_BEAT_SCHEDULE = {
-    'run-task-every-30-seconds': {
-        'task': 'orders.tasks.initiate_auto_payments',
-        'schedule': timedelta(seconds=30),
-    },
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://localhost:6379/1',
+    }
 }
+
+CELERY_CACHE_BACKEND = 'default'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

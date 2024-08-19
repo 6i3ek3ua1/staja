@@ -30,4 +30,5 @@ class Order(models.Model):
     def add_payment_id(self, payment_id):
         self.payment_id = payment_id
         self.is_active = True
+        self.status = 3
         self.save()

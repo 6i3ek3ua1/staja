@@ -5,7 +5,7 @@ from users.models import User
 
 
 class Order(models.Model):
-    STATUS_CHOICES = [(0, "Создаётся"), (1, "Оплачен"), (2, "Доставлен")]
+    STATUS_CHOICES = [(0, "Создаётся"), (1, "Оплачен"), (2, "Доставлен"), (3, "Подписка")]
     status = models.IntegerField(choices=STATUS_CHOICES, default=0)
     date = models.DateField().auto_now
     user = models.ForeignKey(User, on_delete=models.CASCADE)

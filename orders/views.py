@@ -87,7 +87,7 @@ class OrderConsultView(CreateView):
             "description": f"{last_order.id}",
             "save_payment_method": True
         }, uuid.uuid4())
-        result = initiate_auto_payments.delay()
+        result = initiate_auto_payments.delay(last_order.id)
         print(result)
         return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
 
@@ -196,3 +196,9 @@ class OrderListView(ListView):
     def get_queryset(self):
         queryset = super(OrderListView, self).get_queryset()
         return queryset.filter(user=self.request.user)
+
+
+def order_remove(request, id):
+    order = Order.objects.get(pk=id)
+    order.delete()
+    return HttpResponseRedirect(request.META['HTTP_REFERER'])

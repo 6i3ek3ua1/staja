@@ -9,13 +9,19 @@
                         <h4>Заказ {{ order.id }}</h4>
                         <h2>Статус: {{ order.get_status_display }}</h2>
                         <div class="product-list">
-                            {% for basket in order.basket_history.purchased_items %}
+                        {% if order.is_active %}
                             <div class="product">
-                                {{ basket.product_name }}
-                                кол-во: {{ basket.quantity }}
-                                стоимость: {{ basket.sum }} р.
+                                <a href="{% url 'order:order_remove' order.id %}" class="button">Отменить подписку</a>
                             </div>
+                        {% else %}
+                            {% for basket in order.basket_history.purchased_items %}
+                                <div class="product">
+                                    {{ basket.product_name }}
+                                    кол-во: {{ basket.quantity }}
+                                    стоимость: {{ basket.sum }} р.
+                                </div>
                             {% endfor %}
+                        {% endif %}
                         </div>
                         <h4>Цена заказа: {{ order.basket_history.total_sum }} р.</h4>
                     {% endfor %}

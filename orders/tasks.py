@@ -7,23 +7,23 @@ from staja import settings
 from .models import Order
 
 
-
 Configuration.account_id = settings.YOOKASSA_SHOP_ID
 Configuration.secret_key = settings.YOOKASSA_SECRET_KEY
 
 app = Celery('tasks', broker='redis://localhost:6379/0')
 
+
 @shared_task
-def initiate_auto_payments():
-    schedule.every(30).seconds.do(auto_payments)
+def initiate_auto_payments(id):
+    schedule.every(30).seconds.do(auto_payments, id)
 
     while True:
         schedule.run_pending()
         time.sleep(1)
 
 
-def auto_payments():
-    orders = Order.objects.filter(is_active=True)
+def auto_payments(id):
+    orders = Order.objects.filter(id=id)
 
     for payment in orders:
         try:

@@ -1,7 +1,8 @@
 import json
-import time
 import uuid
 from http import HTTPStatus
+
+from django.shortcuts import render
 from django.views.generic import ListView
 from yookassa.domain.notification import WebhookNotificationEventType, WebhookNotificationFactory
 from django.http import HttpResponseRedirect, HttpResponse
@@ -40,7 +41,20 @@ class OrderView(CreateView):
         orders = Order.objects.filter(user=self.request.user)
         last_order = orders.last()
         summ = 0
+        list_items = []
         for basket in baskets:
+            item = {
+                "description": f"{basket.product.name}",
+                "quantity": f"{basket.quantity}",
+                "amount": {
+                    "value": f"{basket.product.price}.00",
+                    "currency": "RUB"
+                },
+                "vat_code": 2,
+                "payment_mode": "full_payment",
+                "payment_subject": "commodity",
+            }
+            list_items.append(item)
             summ += basket.sum()
 
         payment = Payment.create({
@@ -53,8 +67,15 @@ class OrderView(CreateView):
                 "return_url": "{}{}".format(settings.DOMAIN_NAME, reverse('order:success_order')),
             },
             "capture": True,
-            "description": f"{last_order.id}"
+            "description": f"{last_order.id}",
+            "receipt": {
+                "customer": {
+                    "email": f"{request.user.email}",
+                },
+                "items": list_items,
+            }
         }, uuid.uuid4())
+
         return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
 
     def form_valid(self, form):
@@ -170,7 +191,7 @@ def my_webhook_handler(request):
                     else:
                         order_id = some_data['orderId']
                         order = Order.objects.get(id=order_id)
-                        order.update_after_payment()
+                        order.update_after_payment(payment_info.id)
                         print('emae_klass')
                 else:
                     print('emae ne klass')
@@ -202,3 +223,17 @@ def order_remove(request, id):
     order = Order.objects.get(pk=id)
     order.delete()
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+def receipt_list_view(request):
+    orders = Order.objects.filter(user=request.user)
+    last_order = orders.last()
+    params = {"payment_id": last_order.payment_id}
+    res = Receipt.list(params)
+    receipt = res['items'][0]
+    context = {
+        "receipt_data": receipt,
+        "order_history": last_order.basket_history
+    }
+    print(res)
+    return render(request, 'orders/receipt.html', context)

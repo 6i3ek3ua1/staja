@@ -17,13 +17,14 @@ class Order(models.Model):
     def __str__(self):
         return f'Order #{self.id}'
 
-    def update_after_payment(self):
+    def update_after_payment(self, payment_id):
         baskets = Basket.objects.filter(user=self.user)
         self.status = 1
         self.basket_history = {
             'purchased_items': [basket.de_json() for basket in baskets],
             'total_sum': baskets.total_sum()
         }
+        self.payment_id = payment_id
         baskets.delete()
         self.save()
 

@@ -23,7 +23,7 @@
                                 {% endfor %}
                             </div>
                             <h4>Цена заказа: {{ order.basket_history.total_sum }} р.</h4>
-                                <a href={% url 'order:receipt' %}>Посмотреть чек</a>
+                                <a href={% url 'order:receipt' order.id %}>Посмотреть чек</a>
                             {% endif %}
                         {% endfor %}
                         {% else %}

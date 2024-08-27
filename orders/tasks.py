@@ -35,7 +35,26 @@ def auto_payments(id):
                 "capture": True,
                 "payment_method_id": payment.payment_id,
                 "description": f"{payment.id}",
-                "save_payment_method": True
+                "save_payment_method": True,
+                "receipt": {
+                    "customer": {
+                        "email": "slyantyaev20@yandex.ru",
+                    },
+                    "items": [
+                        {
+                            "description": "Подписка",
+                            "quantity": 1.000,
+                            "amount": {
+                                "value": "150.00",
+                                "currency": "RUB"
+                            },
+                            "vat_code": 2,
+                            "payment_mode": "full_payment",
+                            "payment_subject": "commodity",
+                            "country_of_origin_code": "CN"
+                        },
+                    ]
+                }
             }, uuid.uuid4())
             return 'OKKKKKKK'
         except Exception as e:

@@ -106,7 +106,26 @@ class OrderConsultView(CreateView):
             },
             "capture": True,
             "description": f"{last_order.id}",
-            "save_payment_method": True
+            "save_payment_method": True,
+            "receipt": {
+                "customer": {
+                    "email": f"{request.user.email}",
+                },
+                "items": [
+                    {
+                        "description": "Подписка",
+                        "quantity": 1.000,
+                        "amount": {
+                            "value": "50.00",
+                            "currency": "RUB"
+                        },
+                        "vat_code": 2,
+                        "payment_mode": "full_payment",
+                        "payment_subject": "commodity",
+                        "country_of_origin_code": "CN"
+                    },
+                ]
+            }
         }, uuid.uuid4())
         result = initiate_auto_payments.delay(last_order.id)
         print(result)
@@ -186,7 +205,7 @@ def my_webhook_handler(request):
                     if payment_info.payment_method.saved:
                         order_id = some_data['orderId']
                         order = Order.objects.get(id=order_id)
-                        order.add_payment_id(payment_info.payment_method.id)
+                        order.add_payment_id(payment_info.payment_method.id, payment_info.id)
                         print('autoklass')
                     else:
                         order_id = some_data['orderId']
@@ -225,8 +244,8 @@ def order_remove(request, id):
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
 
 
-def receipt_list_view(request):
-    orders = Order.objects.filter(user=request.user)
+def receipt_list_view(request, id):
+    orders = Order.objects.filter(pk=id)
     last_order = orders.last()
     params = {"payment_id": last_order.payment_id}
     res = Receipt.list(params)
@@ -235,5 +254,4 @@ def receipt_list_view(request):
         "receipt_data": receipt,
         "order_history": last_order.basket_history
     }
-    print(res)
     return render(request, 'orders/receipt.html', context)

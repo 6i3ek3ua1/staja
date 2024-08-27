@@ -12,6 +12,7 @@ class Order(models.Model):
     address = models.TextField(default='Россия, Москва, ул. Мира, дом 666')
     basket_history = models.JSONField(default=dict)
     payment_id = models.CharField(max_length=255, null=True, blank=True)
+    payment_method_id = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
@@ -28,7 +29,8 @@ class Order(models.Model):
         baskets.delete()
         self.save()
 
-    def add_payment_id(self, payment_id):
+    def add_payment_id(self, payment_method_id, payment_id):
+        self.payment_method_id = payment_method_id
         self.payment_id = payment_id
         self.is_active = True
         self.status = 3

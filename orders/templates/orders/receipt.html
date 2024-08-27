@@ -57,7 +57,7 @@
     </table>
 
     <p><strong>Итого:</strong> {{ order_history.total_sum|floatformat:2 }} {{ receipt_data.items.0.amount.currency }}</p>
-
+<a href="{% url 'products:index' %}">возврат на главный экран</a>
 </body>
 </html>
 

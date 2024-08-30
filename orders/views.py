@@ -250,8 +250,11 @@ def receipt_list_view(request, id):
     params = {"payment_id": last_order.payment_id}
     res = Receipt.list(params)
     receipt = res['items'][0]
+    if not last_order.send_mail_flag:
+        last_order.send_mail(receipt)
     context = {
         "receipt_data": receipt,
-        "order_history": last_order.basket_history
+        "order_history": last_order.basket_history,
+        "order": last_order,
     }
     return render(request, 'orders/receipt.html', context)

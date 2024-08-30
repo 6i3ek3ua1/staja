@@ -37,6 +37,9 @@
 <p><strong>Дата и время регистрации:</strong> {{ receipt_data.registered_at }}</p>
 <p><strong>ID чека в облачной кассе:</strong> {{ receipt_data.fiscal_provider_id }}</p>
 
+{% if order.is_active %}
+    <p>Товар - подписка. Стоимость - 150 руб./мес. Первый платёж - 50 руб.</p>
+{% else %}
     <table>
     <thead>
         <tr>
@@ -55,8 +58,8 @@
         {% endfor %}
     </tbody>
     </table>
-
     <p><strong>Итого:</strong> {{ order_history.total_sum|floatformat:2 }} {{ receipt_data.items.0.amount.currency }}</p>
+{% endif %}
 <a href="{% url 'products:index' %}">возврат на главный экран</a>
 </body>
 </html>

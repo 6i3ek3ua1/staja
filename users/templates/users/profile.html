@@ -14,9 +14,12 @@
                     <input type="submit" value="Сохранить">
                 </div>
                 <div>
-                    <div class="small"><a id="normal" href="{%  url 'users:logout' %}">Выйти из аккаунта</a></div>
+                    <div><a id="normal" href="{%  url 'users:logout' %}" class="button">Выйти из аккаунта</a></div>
                 </div>
 
             </form>
     </section>
+    <div>
+        <a href="{% url 'order:list_order' %}" class="button">МОИ ЗАКАЗЫ</a>
+    </div>
 {% endblock %}

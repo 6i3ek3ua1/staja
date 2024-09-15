@@ -9,8 +9,9 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
+from celery.schedules import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,9 +27,9 @@ SECRET_KEY = 'django-insecure-mfyfxh@zdqhpql0u@rqb4r4mwjsc#ak6ow=n(-7s^(#&ur20h7
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['localhost', 'e88a-149-50-231-113.ngrok-free.app', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', 'f868-109-252-182-44.ngrok-free.app', '127.0.0.1', '0.0.0.0', 'web']
 
-CSRF_TRUSTED_ORIGINS = ['https://e88a-149-50-231-113.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://f868-109-252-182-44.ngrok-free.app']
 
 DOMAIN_NAME = 'http://127.0.0.1:8000'
 
@@ -43,7 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'products',
-    'orders'
+    'django_celery_beat',
+    'django_celery_results',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
@@ -83,11 +86,14 @@ WSGI_APPLICATION = 'staja.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'db'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -140,3 +146,23 @@ LOGOUT_REDIRECT_URL = '/'
 #Yookassa
 YOOKASSA_SECRET_KEY = 'test_HrOiPv0dOnscsu8js0TdFpvEbBx0XiVo6Of9F_QFAnQ'
 YOOKASSA_SHOP_ID = '424186'
+
+# Указываем брокер сообщений, который будет использоваться Celery
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://localhost:6379/1',
+    }
+}
+
+CELERY_CACHE_BACKEND = 'default'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

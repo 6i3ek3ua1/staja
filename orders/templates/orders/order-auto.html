@@ -1,0 +1,26 @@
+<{% extends 'orders/base.html' %}
+{% block content %}
+    <section>
+        <div>
+            Пожалуйста, заполните адрес.
+        </div>
+        <div>
+            <div>
+                <h1>Оформление подписки</h1>
+            </div>
+            <form action="{% url 'order:order_consult' %}" method="post">
+                {% csrf_token %}
+            <div>
+                <div>
+                    <div>
+                        <label for="{{ form.email.address }}">Адрес</label>
+                        {{ form.address }}
+                    </div>
+                </div>
+                        <button type="submit">Продолжить</button>
+                </div>
+            </form>
+        </div>
+
+    </section>
+{% endblock %}

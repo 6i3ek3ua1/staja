@@ -24,8 +24,9 @@
         <div class="container">
             <div class="main-content">
                 <div class="consultation">
-                    <h2>Запись на консультацию</h2>
-                    <form action="/book-consultation" method="post">
+                    <h2>Запись на наш платный телеграмм канал:</h2>
+                    <form>
+                        {% csrf_token %}
                         <label for="name">Имя:</label>
                         <input type="text" id="name" name="name" required>
 
@@ -38,7 +39,7 @@
                         <label for="message">Сообщение:</label>
                         <textarea id="message" name="message" rows="4" required></textarea>
 
-                        <button type="submit">Записаться</button>
+                        <a href="{% url 'order:order_consult' %}" class="button">Записаться</a>
                     </form>
                 </div>
 

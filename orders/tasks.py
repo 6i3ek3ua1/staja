@@ -35,7 +35,6 @@ def auto_payments(id):
                 "capture": True,
                 "payment_method_id": payment.payment_id,
                 "description": f"{payment.id}",
-                "save_payment_method": True,
                 "receipt": {
                     "customer": {
                         "email": "slyantyaev20@yandex.ru",

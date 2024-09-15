@@ -1,15 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-  <title>Спасибо за заказ</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Оплата успешно завершена</title>
 </head>
 <body>
-  <section>
-    <p>
-      Спасибо за заказ!
-      <a href="{% url 'products:index' %}">Возврат на главную страницу</a>.
-    </p>
-  </section>
+    <h1>Спасибо за покупку!</h1>
+        <p>Чтобы посмотреть чек и получить его на указанный вами email в списке заказов намжмите "получить чек".</p>
+    <a href="{% url 'products:index' %}">Вернуться на сайт</a>
 </body>
 </html>

@@ -27,9 +27,9 @@ SECRET_KEY = 'django-insecure-mfyfxh@zdqhpql0u@rqb4r4mwjsc#ak6ow=n(-7s^(#&ur20h7
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['localhost', 'f868-109-252-182-44.ngrok-free.app', '127.0.0.1', '0.0.0.0', 'web']
+ALLOWED_HOSTS = ['localhost', 'cbf5-109-252-182-44.ngrok-free.app', '127.0.0.1', '0.0.0.0', 'web']
 
-CSRF_TRUSTED_ORIGINS = ['https://f868-109-252-182-44.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://cbf5-109-252-182-44.ngrok-free.app']
 
 DOMAIN_NAME = 'http://127.0.0.1:8000'
 
@@ -166,3 +166,11 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+EMAIL_HOST_PASSWORD = "pvbwlkjjhyvoxzov"
+EMAIL_HOST = 'smtp.yandex.ru'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = "test-yookassa-receipts@yandex.ru"
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

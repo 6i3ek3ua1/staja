@@ -1,7 +1,8 @@
 import json
-import time
 import uuid
 from http import HTTPStatus
+
+from django.shortcuts import render
 from django.views.generic import ListView
 from yookassa.domain.notification import WebhookNotificationEventType, WebhookNotificationFactory
 from django.http import HttpResponseRedirect, HttpResponse
@@ -40,7 +41,20 @@ class OrderView(CreateView):
         orders = Order.objects.filter(user=self.request.user)
         last_order = orders.last()
         summ = 0
+        list_items = []
         for basket in baskets:
+            item = {
+                "description": f"{basket.product.name}",
+                "quantity": f"{basket.quantity}",
+                "amount": {
+                    "value": f"{basket.product.price}.00",
+                    "currency": "RUB"
+                },
+                "vat_code": 2,
+                "payment_mode": "full_payment",
+                "payment_subject": "commodity",
+            }
+            list_items.append(item)
             summ += basket.sum()
 
         payment = Payment.create({
@@ -53,60 +67,14 @@ class OrderView(CreateView):
                 "return_url": "{}{}".format(settings.DOMAIN_NAME, reverse('order:success_order')),
             },
             "capture": True,
-            "description": f"{last_order.id}"
+            "description": f"{last_order.id}",
+            "receipt": {
+                "customer": {
+                    "email": f"{request.user.email}",
+                },
+                "items": list_items,
+            }
         }, uuid.uuid4())
-
-        res = Receipt.create({
-            "customer": {
-                "full_name": f"{self.request.user.first_name} {self.request.user.last_name}",
-                "email": f"{self.request.user.email}",
-            },
-            "type": "payment",
-            "send": True,
-            "items": [
-                {
-                    "description": "Наименование товара 1",
-                    "quantity": 1.000,
-                    "amount": {
-                        "value": "14000.00",
-                        "currency": "RUB"
-                    },
-                    "vat_code": "2",
-                    "payment_mode": "full_payment",
-                    "payment_subject": "commodity",
-                    "country_of_origin_code": "CN",
-                },
-                {
-                    "description": "Наименование товара 2",
-                    "quantity": 1.000,
-                    "amount": {
-                        "value": "1000.00",
-                        "currency": "RUB"
-                    },
-                    "vat_code": "2",
-                    "payment_mode": "full_payment",
-                    "payment_subject": "commodity",
-                    "country_of_origin_code": "CN",
-                },
-            ],
-            "settlements": [
-                {
-                    "type": "prepayment",
-                    "amount": {
-                        "value": "8000.00",
-                        "currency": "RUB"
-                    },
-                },
-                {
-                    "type": "prepayment",
-                    "amount": {
-                        "value": "7000.00",
-                        "currency": "RUB"
-                    },
-                }
-            ]
-        })
-
         return HttpResponseRedirect(payment.confirmation.confirmation_url, status=HTTPStatus.SEE_OTHER)
 
     def form_valid(self, form):
@@ -137,7 +105,26 @@ class OrderConsultView(CreateView):
             },
             "capture": True,
             "description": f"{last_order.id}",
-            "save_payment_method": True
+            "save_payment_method": True,
+            "receipt": {
+                "customer": {
+                    "email": f"{request.user.email}",
+                },
+                "items": [
+                    {
+                        "description": "Подписка",
+                        "quantity": 1.000,
+                        "amount": {
+                            "value": "50.00",
+                            "currency": "RUB"
+                        },
+                        "vat_code": 2,
+                        "payment_mode": "full_payment",
+                        "payment_subject": "commodity",
+                        "country_of_origin_code": "CN"
+                    },
+                ]
+            }
         }, uuid.uuid4())
         result = initiate_auto_payments.delay(last_order.id)
         print(result)
@@ -217,12 +204,12 @@ def my_webhook_handler(request):
                     if payment_info.payment_method.saved:
                         order_id = some_data['orderId']
                         order = Order.objects.get(id=order_id)
-                        order.add_payment_id(payment_info.payment_method.id)
+                        order.add_payment_id(payment_info.payment_method.id, payment_info.id)
                         print('autoklass')
                     else:
                         order_id = some_data['orderId']
                         order = Order.objects.get(id=order_id)
-                        order.update_after_payment()
+                        order.update_after_payment(payment_info.id)
                         print('emae_klass')
                 else:
                     print('emae ne klass')
@@ -254,3 +241,19 @@ def order_remove(request, id):
     order = Order.objects.get(pk=id)
     order.delete()
     return HttpResponseRedirect(request.META['HTTP_REFERER'])
+
+
+def receipt_list_view(request, id):
+    orders = Order.objects.filter(pk=id)
+    last_order = orders.last()
+    params = {"payment_id": last_order.payment_id}
+    res = Receipt.list(params)
+    receipt = res['items'][0]
+    if not last_order.send_mail_flag:
+        last_order.send_mail(receipt)
+    context = {
+        "receipt_data": receipt,
+        "order_history": last_order.basket_history,
+        "order": last_order,
+    }
+    return render(request, 'orders/receipt.html', context)

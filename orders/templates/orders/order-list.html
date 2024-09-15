@@ -13,6 +13,7 @@
                                 <div class="product">
                                     <a href="{% url 'order:order_remove' order.id %}" class="button">Отменить подписку</a>
                                 </div>
+                                <a href={% url 'order:receipt' order.id %}>Получить чек</a>
                             {% else %}
                                 {% for basket in order.basket_history.purchased_items %}
                                     <div class="product">
@@ -23,6 +24,7 @@
                                 {% endfor %}
                             </div>
                             <h4>Цена заказа: {{ order.basket_history.total_sum }} р.</h4>
+                                <a href={% url 'order:receipt' order.id %}>Получить чек</a>
                             {% endif %}
                         {% endfor %}
                         {% else %}
